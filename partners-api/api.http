@@ -66,3 +66,18 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:3000/events/{{ eventId }}/spots/{{ spotId }}
+
+# RESERVE ENDPOINT
+
+###
+@spotName = {{ createSpot.response.body.name }}
+
+###
+POST http://localhost:3000/events/{{ eventId }}/reserve
+Content-Type: application/json
+
+{
+    "spots": ["{{ spotName }}"],
+    "ticketKind": "full",
+    "email": "example@email.com"
+}
