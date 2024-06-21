@@ -1,0 +1,83 @@
+# EVENT ENDPOINTS
+
+### 
+GET http://localhost:3001/eventos
+
+###
+# @name criarEvento
+POST http://localhost:3001/eventos
+Content-Type: application/json
+
+{
+    "nome": "Belo In Concert",
+    "descricao": "Legal",
+    "data": "2024-08-01T20:00:00",
+    "preco": 200
+}
+
+###
+@eventoId = {{ criarEvento.response.body.id }}
+
+### 
+GET http://localhost:3001/eventos/{{ eventoId }}
+
+###
+PATCH http://localhost:3001/eventos/{{ eventoId }}
+Content-Type: application/json
+
+{
+    "name": "THE DREAM SHOW",
+    "description": "Very cool",
+    "date": "2024-08-01T17:00:00",
+    "price": 200
+}
+
+###
+DELETE http://localhost:3001/eventos/{{ eventoId }}
+
+# SPOT ENDPOINTS
+
+### 
+GET http://localhost:3001/eventos/{{ eventoId }}/lugares
+
+###
+# @name criarLugar
+POST http://localhost:3001/eventos/{{ eventoId }}/lugares
+Content-Type: application/json
+
+{
+    "nome": "A1"
+}
+
+###
+@lugarId = {{ criarLugar.response.body.id }}
+
+### 
+GET http://localhost:3001/eventos/{{ eventoId }}/lugares/{{ lugarId }}
+
+###
+PATCH http://localhost:3001/eventos/{{ eventoId }}/lugares/{{ lugarId }}
+Content-Type: application/json
+
+{
+    "nome": "B1",
+    "estado": "reserved"
+}
+
+###
+DELETE http://localhost:3001/eventos/{{ eventoId }}/lugares/{{ lugarId }}
+
+# RESERVE ENDPOINT
+
+###
+@nomeLugar = {{ criarLugar.response.body.name }}
+
+###
+POST http://localhost:3001/eventos/{{ eventoId }}/reservar
+Content-Type: application/json
+
+{
+    "lugares": ["{{ nomeLugar }}"],
+    "tipoIngresso": "inteira",
+    "email": "example@email.com"
+}
