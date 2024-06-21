@@ -11,6 +11,7 @@ import {
 import { SpotsService } from '@app/core/spots/spots.service';
 import { CriarLugarRequest } from './request/criar-lugar.request';
 import { AtualizarLugarRequest } from './request/atualizar-lugar.request';
+import { Status } from '@prisma/client';
 
 @Controller('eventos/:eventoId/lugares')
 export class LugaresController {
@@ -48,7 +49,10 @@ export class LugaresController {
   ) {
     return this.spotsService.update(lugarId, eventoId, {
       name: atualizarLugarRequest.nome,
-      status: atualizarLugarRequest.estado,
+      status:
+        atualizarLugarRequest.estado === 'disponível'
+          ? Status.available
+          : Status.reserved,
     });
   }
 

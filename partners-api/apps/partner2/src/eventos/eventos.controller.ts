@@ -12,6 +12,7 @@ import { EventsService } from '@app/core/events/events.service';
 import { CriarEventoRequest } from './request/criar-evento.request';
 import { AtualizarEventoRequest } from './request/atualizar-evento.request';
 import { ReservarLugarRequest } from './request/reservar-lugar.request';
+import { TicketKind } from '@prisma/client';
 
 @Controller('eventos')
 export class EventosController {
@@ -65,7 +66,10 @@ export class EventosController {
       eventId: id,
       spots: reservarLugarRequest.lugares,
       email: reservarLugarRequest.email,
-      ticketKind: reservarLugarRequest.tipoIngresso,
+      ticketKind:
+        reservarLugarRequest.tipoIngresso === 'inteira'
+          ? TicketKind.full
+          : TicketKind.half,
     });
   }
 }
