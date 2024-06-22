@@ -1,0 +1,31 @@
+package domain
+
+import (
+	"time"
+)
+
+type Rating string
+
+const (
+	RatingLivre Rating = "L"
+	Rating10    Rating = "L10"
+	Rating12    Rating = "L12"
+	Rating14    Rating = "L14"
+	RatingL16   Rating = "L16"
+	RatingL18   Rating = "L18"
+)
+
+type Event struct {
+	Id           string
+	Name         string
+	Location     string
+	Organization string
+	Rating       Rating
+	Date         time.Time
+	ImageURL     string
+	Capacity     int
+	Price        float64
+	PartnerId    int
+	Spots        []Spot
+	Tickets      []Ticket
+}
