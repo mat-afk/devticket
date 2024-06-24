@@ -7,18 +7,18 @@ var (
 	ErrTicketTypeInvalid = errors.New("ticket type must be 'full' or 'half'")
 )
 
-type TicketType string
+type TicketKind string
 
 const (
-	TicketTypeFull TicketType = "full"
-	TicketTypeHalf TicketType = "half"
+	TicketKindFull TicketKind = "full"
+	TicketKindHalf TicketKind = "half"
 )
 
 type Ticket struct {
 	Id         string
 	EventId    string
 	Spot       *Spot
-	TicketType TicketType
+	TicketKind TicketKind
 	Price      float64
 }
 
@@ -30,12 +30,12 @@ func (t *Ticket) Validate() error {
 	return nil
 }
 
-func IsTicketTypeValid(ticketType TicketType) bool {
-	return ticketType == TicketTypeFull || ticketType == TicketTypeHalf
+func IsTicketKindValid(TicketKind TicketKind) bool {
+	return TicketKind == TicketKindFull || TicketKind == TicketKindHalf
 }
 
 func (t *Ticket) CalculatePrice() {
-	if t.TicketType == TicketTypeHalf {
+	if t.TicketKind == TicketKindHalf {
 		t.Price /= 2
 	}
 }
