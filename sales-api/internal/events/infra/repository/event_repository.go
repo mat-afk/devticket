@@ -14,6 +14,22 @@ func NewEventRepositoryImpl(db *sql.DB) (domain.EventRepository, error) {
 	return &EventRepositoryImpl{db: db}, nil
 }
 
+func (r *EventRepositoryImpl) ListEvents() ([]domain.Event, error) {
+	return nil, nil
+}
+
+func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, error) {
+	return nil, nil
+}
+
+func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]domain.Spot, error) {
+	return nil, nil
+}
+
+func (r *EventRepositoryImpl) FindSpotByName(eventId, spotName string) (*domain.Spot, error) {
+	return nil, nil
+}
+
 func (r *EventRepositoryImpl) CreateEvent(event *domain.Event) error {
 
 	query := `
@@ -37,24 +53,14 @@ func (r *EventRepositoryImpl) CreateEvent(event *domain.Event) error {
 	return err
 }
 
-func (r *EventRepositoryImpl) ListEvents() ([]domain.Event, error) {
-	return nil, nil
-}
-
-func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, error) {
-	return nil, nil
-}
-
-func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]domain.Spot, error) {
-	return nil, nil
-}
-
-func (r *EventRepositoryImpl) FindSpotByName(eventId, spotName string) (*domain.Spot, error) {
-	return nil, nil
-}
-
 func (r *EventRepositoryImpl) CreateSpot(spot *domain.Spot) error {
-	return nil
+	query := `
+	INSERT INTO spots (id, event_id, name, status, ticket_id)
+	VALUES(?, ?, ?, ?, ?)
+`
+	_, err := r.db.Exec(query, spot.Id, spot.EventId, spot.Name, spot.Status, spot.TicketId)
+
+	return err
 }
 
 func (r *EventRepositoryImpl) CreateTicket(ticket *domain.Ticket) error {
