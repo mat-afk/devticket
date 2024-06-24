@@ -55,16 +55,22 @@ func (r *EventRepositoryImpl) CreateEvent(event *domain.Event) error {
 
 func (r *EventRepositoryImpl) CreateSpot(spot *domain.Spot) error {
 	query := `
-	INSERT INTO spots (id, event_id, name, status, ticket_id)
-	VALUES(?, ?, ?, ?, ?)
-`
+		INSERT INTO spots (id, event_id, name, status, ticket_id)
+		VALUES(?, ?, ?, ?, ?)
+	`
 	_, err := r.db.Exec(query, spot.Id, spot.EventId, spot.Name, spot.Status, spot.TicketId)
 
 	return err
 }
 
 func (r *EventRepositoryImpl) CreateTicket(ticket *domain.Ticket) error {
-	return nil
+	query := `
+		INSERT INTO tickets (id, event_id, spot_id, ticket_kind, price)
+		VALUES(?, ?, ?, ?, ?)
+	`
+	_, err := r.db.Exec(query, ticket.Id, ticket.EventId, ticket.Spot.Id, ticket.TicketKind, ticket.Price)
+
+	return err
 }
 
 func (r *EventRepositoryImpl) ReserveSpot(spotId, ticketId string) error {
