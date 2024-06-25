@@ -74,5 +74,12 @@ func (r *EventRepositoryImpl) CreateTicket(ticket *domain.Ticket) error {
 }
 
 func (r *EventRepositoryImpl) ReserveSpot(spotId, ticketId string) error {
-	return nil
+	query := `
+		UPDATE spots 
+		SET status = ?, ticket_id = ?
+		WHERE id = ?
+	`
+	_, err := r.db.Exec(query, domain.SpotStatusSold, ticketId, spotId)
+
+	return err
 }
