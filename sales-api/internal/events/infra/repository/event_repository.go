@@ -19,7 +19,37 @@ func (r *EventRepositoryImpl) ListEvents() ([]domain.Event, error) {
 }
 
 func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, error) {
-	return nil, nil
+
+	query := `
+		SELECT id, name, location, organization, rating, date, image_url, capacity, price, partner_id
+		FROM events
+		WHERE id = ?		
+	`
+	rows, err := r.db.Query(query, eventId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	event := &domain.Event{}
+
+	err = rows.Scan(
+		&event.Id,
+		&event.Name,
+		&event.Location,
+		&event.Organization,
+		&event.Rating,
+		&event.Date,
+		&event.ImageURL,
+		&event.Capacity,
+		&event.Price,
+		&event.PartnerId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
 }
 
 func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]domain.Spot, error) {
