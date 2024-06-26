@@ -31,7 +31,7 @@ func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, erro
 	}
 	defer rows.Close()
 
-	event := &domain.Event{}
+	var event domain.Event
 
 	err = rows.Scan(
 		&event.Id,
@@ -49,7 +49,7 @@ func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, erro
 		return nil, err
 	}
 
-	return event, nil
+	return &event, nil
 }
 
 func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]domain.Spot, error) {
