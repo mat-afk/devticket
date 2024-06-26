@@ -52,7 +52,7 @@ func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, erro
 	return &event, nil
 }
 
-func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]domain.Spot, error) {
+func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]*domain.Spot, error) {
 	return nil, nil
 }
 
