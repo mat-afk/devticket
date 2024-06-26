@@ -53,7 +53,42 @@ func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, erro
 }
 
 func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]*domain.Spot, error) {
-	return nil, nil
+
+	query := `
+		SELECT id, event_id, name, status, tiket_id
+		FROM spots
+		WHERE event_id = ?		
+	`
+	rows, err := r.db.Query(query, eventId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var spots []*domain.Spot
+
+	for rows.Next() {
+		var spot domain.Spot
+
+		err := rows.Scan(
+			&spot.Id,
+			&spot.EventId,
+			&spot.Name,
+			&spot.Status,
+			&spot.TicketId,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		spots = append(spots, &spot)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return spots, nil
 }
 
 func (r *EventRepositoryImpl) FindSpotByName(eventId, spotName string) (*domain.Spot, error) {
