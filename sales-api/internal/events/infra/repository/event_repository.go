@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/mat-afk/devticket/sales-api/internal/events/domain"
 )
@@ -23,7 +24,7 @@ func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, erro
 	query := `
 		SELECT id, name, location, organization, rating, date, image_url, capacity, price, partner_id
 		FROM events
-		WHERE id = ?		
+		WHERE id = ?
 	`
 	rows, err := r.db.Query(query, eventId)
 	if err != nil {
@@ -55,9 +56,9 @@ func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, erro
 func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]*domain.Spot, error) {
 
 	query := `
-		SELECT id, event_id, name, status, tiket_id
+		SELECT id, event_id, name, status, ticket_id
 		FROM spots
-		WHERE event_id = ?		
+		WHERE event_id = ?
 	`
 	rows, err := r.db.Query(query, eventId)
 	if err != nil {
@@ -92,7 +93,40 @@ func (r *EventRepositoryImpl) FindSpotsByEventId(eventId string) ([]*domain.Spot
 }
 
 func (r *EventRepositoryImpl) FindSpotByName(eventId, spotName string) (*domain.Spot, error) {
-	return nil, nil
+
+	query := `
+		SELECT 
+			s.id, s.event_id, s.name, s.status, s.ticket_id, t.id
+		FROM spots s
+		LEFT JOIN tickets t ON s.id = t.spot_id
+		WHERE s.event_id = ? AND s.name = ?
+	`
+	row := r.db.QueryRow(query, eventId, spotName)
+
+	var spot domain.Spot
+	var ticketId sql.NullString
+
+	err := row.Scan(
+		&spot.Id,
+		&spot.EventId,
+		&spot.Name,
+		&spot.Status,
+		&spot.TicketId,
+		&ticketId,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrSpotNotFound
+		}
+
+		return nil, err
+	}
+
+	if ticketId.Valid {
+		spot.TicketId = ticketId.String
+	}
+
+	return &spot, nil
 }
 
 func (r *EventRepositoryImpl) CreateEvent(event *domain.Event) error {
