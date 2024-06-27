@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/mat-afk/devticket/sales-api/internal/events/domain"
 )
@@ -16,7 +17,118 @@ func NewEventRepositoryImpl(db *sql.DB) (domain.EventRepository, error) {
 }
 
 func (r *EventRepositoryImpl) ListEvents() ([]domain.Event, error) {
-	return nil, nil
+
+	query := `
+		SELECT
+			e.id, e.name, e.location, e.organization, e.rating, e.date, e.image_url, e.capacity, e.price, e.partner_id,
+			s.id, s.event_id, s.name, s.status, s.ticket_id,
+			t.id, t.event_id, t.spot_id, t.ticket_kind, t.price
+		FROM events e 
+		LEFT JOIN spots s ON s.event_id = e.id
+		LEFT JOIN tickets t ON t.id = s.ticket_id		
+	`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	eventMap := make(map[string]*domain.Event)
+	spotMap := make(map[string]*domain.Spot)
+
+	for rows.Next() {
+		var eventId, eventName, eventLocation, eventOrganization, eventRating, eventDate, eventImageURL sql.NullString
+		var eventCapacity int
+		var eventPrice sql.NullFloat64
+		var eventPartnerId sql.NullInt32
+
+		var spotId, spotEventId, spotName, spotStatus, spotTicketId sql.NullString
+
+		var ticketId, ticketEventId, ticketSpotId, ticketKind sql.NullString
+		var ticketPrice sql.NullFloat64
+
+		err := rows.Scan(
+			&eventId, &eventName, &eventLocation, &eventOrganization, &eventRating, &eventDate, &eventImageURL,
+			&eventCapacity, &eventPrice, eventPartnerId,
+			&spotId, &spotEventId, &spotName, &spotStatus, &spotTicketId,
+			&ticketId, &ticketEventId, &ticketSpotId, &ticketKind, &ticketPrice,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if !eventId.Valid {
+			continue
+		}
+
+		event, exists := eventMap[eventId.String]
+		if !exists {
+
+			parsedDate, err := time.Parse("2006-01-02 15:04:05", eventDate.String)
+			if err != nil {
+				return nil, err
+			}
+
+			event := &domain.Event{
+				Id:           eventId.String,
+				Name:         eventName.String,
+				Location:     eventLocation.String,
+				Organization: eventOrganization.String,
+				Rating:       domain.Rating(eventRating.String),
+				Date:         parsedDate,
+				ImageURL:     eventImageURL.String,
+				Capacity:     eventCapacity,
+				Price:        eventPrice.Float64,
+				PartnerId:    int(eventPartnerId.Int32),
+				Spots:        []domain.Spot{},
+				Tickets:      []domain.Ticket{},
+			}
+
+			eventMap[event.Id] = event
+		}
+
+		if spotId.Valid {
+
+			spot, exists := spotMap[spotId.String]
+			if !exists {
+
+				spot := &domain.Spot{
+					Id:       spotId.String,
+					EventId:  spotEventId.String,
+					Name:     spotName.String,
+					Status:   domain.SpotStatus(spotStatus.String),
+					TicketId: spotTicketId.String,
+				}
+
+				spotMap[spot.Id] = spot
+				event.Spots = append(event.Spots, *spot)
+			}
+
+			if ticketId.Valid {
+
+				ticket := &domain.Ticket{
+					Id:         ticketId.String,
+					EventId:    ticketEventId.String,
+					Spot:       spot,
+					TicketKind: domain.TicketKind(ticketKind.String),
+					Price:      ticketPrice.Float64,
+				}
+
+				event.Tickets = append(event.Tickets, *ticket)
+			}
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	events := make([]domain.Event, 0, len(eventMap))
+	for _, event := range eventMap {
+		events = append(events, *event)
+	}
+
+	return events, nil
 }
 
 func (r *EventRepositoryImpl) FindEventById(eventId string) (*domain.Event, error) {
